@@ -43,7 +43,6 @@ def euler_from_quaternion(x, y, z, w):
 
 def pointCloudCb(msg):
     global timeStamp
-    #print(msg.header)
     timeStamp = str(msg.header.stamp.secs)  + "." + str(msg.header.stamp.nsecs)
 
 def odomCb(msg):
