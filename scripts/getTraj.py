@@ -16,8 +16,8 @@ markerPub = rospy.Publisher("/slamTrajMarker", MarkerArray, queue_size=1)
 
 
 count = 0
-timeStamp = 0
 poses = []
+timeStampPrev = 0
 
 def euler_from_quaternion(x, y, z, w):
         """
@@ -41,18 +41,14 @@ def euler_from_quaternion(x, y, z, w):
      
         return roll_x, pitch_y, yaw_z # in radians
 
-def pointCloudCb(msg):
-    global timeStamp
-    
-
 def odomCb(msg):
     global count
-    global timeStamp
+    global timeStampPrev
     p = PoseStamped()
     m = MarkerArray()
     marker = Marker()
 
-    timeStamp = str(msg.header.stamp.secs)  + "." + str(msg.header.stamp.nsecs)
+    timeStamp = float(str(msg.header.stamp.secs)  + "." + str(msg.header.stamp.nsecs))
 
     trajectory.header.frame_id = msg.header.frame_id
     trajectory.header.stamp = rospy.Time.now()
@@ -78,19 +74,20 @@ def odomCb(msg):
     trajectory.poses.append(p)
     trajPub.publish(trajectory)
     markerPub.publish(m)
+
     roll, pitch, yaw = euler_from_quaternion(p.pose.orientation.x, p.pose.orientation.y, p.pose.orientation.z, p.pose.orientation.w)
-    x = [float(timeStamp), p.pose.position.x, p.pose.position.y, p.pose.position.z, roll, pitch, yaw]
-    poses.append(x)
+    poses.append([timeStamp, p.pose.position.x, p.pose.position.y, p.pose.position.z, roll, pitch, yaw])
     posesNp = np.asanyarray(poses)
-    print(x)
-    print("\n")
-    np.save("poses_2.npy", posesNp)
+    
+    if count!=0:
+        print(f"Computation time per scan is: {timeStamp - timeStampPrev}")
+
+    timeStampPrev = timeStamp
     count += 1
     
 if __name__=="__main__":
     rospy.init_node("trajectory_node")
     print("Here")
     odomSub = rospy.Subscriber("/integrated_to_init", Odometry, odomCb)
-    pointCloudSub = rospy.Subscriber("/velodyne_points", PointCloud2, pointCloudCb)
     rospy.spin()
 
