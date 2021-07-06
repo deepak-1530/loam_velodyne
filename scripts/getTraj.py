@@ -43,7 +43,7 @@ def euler_from_quaternion(x, y, z, w):
 
 def pointCloudCb(msg):
     global timeStamp
-    timeStamp = str(msg.header.stamp.secs)  + "." + str(msg.header.stamp.nsecs)
+    
 
 def odomCb(msg):
     global count
@@ -51,6 +51,8 @@ def odomCb(msg):
     p = PoseStamped()
     m = MarkerArray()
     marker = Marker()
+
+    timeStamp = str(msg.header.stamp.secs)  + "." + str(msg.header.stamp.nsecs)
 
     trajectory.header.frame_id = msg.header.frame_id
     trajectory.header.stamp = rospy.Time.now()
@@ -82,7 +84,7 @@ def odomCb(msg):
     posesNp = np.asanyarray(poses)
     print(x)
     print("\n")
-    np.save("poses.npy", posesNp)
+    np.save("poses_2.npy", posesNp)
     count += 1
     
 if __name__=="__main__":
